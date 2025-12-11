@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kasada Heritage — Forest Tengger</title>
+
+  <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-sA+9R6+5u4JXhksz7pRUEwP45AwF48Q1Rk+dxKp3Cqo=" crossorigin=""/>
+
+  <style>
+    /* ================= THEME: FOREST TENGGER ================= */
+    :root{
+      --bg-dark: #08140e;        /* deep forest */
+      --bg-mid:  #0d2a1b;        /* mid */
+      --accent:  #b7eec9;        /* soft mint (accent) */
+      --gold:    #d69e45;        /* warm gold for highlights */
+      --card:    rgba(8,20,14,0.65);
+      --glass:   rgba(255,255,255,0.03);
+      --text:    #e9ffee;
+      --muted:   #9db9a8;
+      .ethnic-frame{
+        background-image: var(--ethnic);
+    }
+      --radius: 16px;
+      --max-width: 1100px;
+    }
+
+    body{
+  margin:0;
+  font-family: Inter, "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
+  background: 
+    linear-gradient(180deg, rgba(4,10,6,1) 0%, rgba(7,18,12,1) 60%),
+    url('https://upload.wikimedia.org/wikipedia/commons/3/3c/Yadnya_Kasada_festival_at_Mount_Bromo.jpg');
+
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+
+    /* ================= HEADER / HERO ================= */
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter: blur(6px);
+      background: linear-gradient(90deg, rgba(5,12,8,0.55), rgba(5,12,8,0.35));
+      border-bottom: 1px solid rgba(183,238,201,0.07);
+    }
+    .header-inner{
+      max-width:var(--max-width);
+      margin:0 auto;
+      display:flex;
+      gap:16px;
+      align-items:center;
+      padding:16px;
+      padding-left:22px;
+    }
+    .logo{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo .badge{
+      width:52px;height:52px;border-radius:10px;
+      background:linear-gradient(135deg,var(--gold),rgba(199,163,107,0.7));
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;color:#121212;font-size:18px;
+    }
+    .site-title{font-weight:700;font-size:18px;letter-spacing:0.6px}
+    .site-sub{font-size:12px;color:var(--muted)}
+
+    nav{margin-left:auto}
+    nav a{
+      color:var(--accent);
+      text-decoration:none;
+      margin:0 10px;
+      font-weight:600;
+      padding:8px 10px;border-radius:8px;
+      transition:all .22s ease;
+    }
+    nav a:hover{transform:translateY(-3px); color:var(--gold); box-shadow: 0 6px 18px rgba(0,0,0,0.35);}
+
+    /* ================= HERO SECTION with PARALLAX LAYERS ================= */
+    .hero{
+      position:relative;
+      padding:64px 20px 36px;
+      overflow:visible;
+      min-height:360px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .parallax{
+      position:absolute; inset:0; pointer-events:none; z-index:1;
+    }
+    .layer{
+      position:absolute; inset:0; background-repeat:no-repeat; background-position:center; background-size:cover;
+      transform-origin:center;
+    }
+    .layer.fg{
+      background-image:linear-gradient(180deg, rgba(5,10,6,0.0), rgba(5,10,6,0.8)); mix-blend-mode:multiply; opacity:0.95
+    }
+    .layer.mid{
+      background-image: url('bromo3.jpg'); 
+      filter:blur(2px) saturate(105%);
+    }
+    .layer.bg{
+      background-image: url('bromo2.jpg'); 
+      filter:brightness(.75) contrast(.95);
+    }
+
+    .hero-card{
+      position:relative;
+      z-index:10;
+      max-width:var(--max-width);
+      width:100%;
+      display:flex;
+      gap:24px;
+      align-items:center;
+      padding:28px;
+      border-radius:18px;
+      background: linear-gradient(180deg, rgba(6,20,14,0.6), rgba(8,26,18,0.55));
+      box-shadow: 0 8px 40px rgba(14, 62, 38, 0.6);
+      border: 1px solid rgba(183,238,201,0.06);
+      backdrop-filter: blur(6px) saturate(1.05);
+    }
+
+    .hero-left{flex:1}
+    .hero-right{width:340px; min-width:260px; position:relative}
+
+    .hero h1{margin:0;font-size:36px;line-height:1.05; color:var(--accent)}
+    .hero p.lead{margin-top:10px;color:var(--text);opacity:.95; font-size:15px}
+    .ctas{margin-top:18px;display:flex;gap:12px}
+    .btn{
+      padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:700;
+      background:linear-gradient(180deg,var(--accent),rgba(167,240,201,0.18)); color:#042218;
+      box-shadow: 0 10px 30px rgba(11,38,26,0.45);
+    }
+    .btn.ghost{
+      background:transparent;color:var(--text);border:1px solid rgba(183,238,201,0.12);
+    }
+
+    /* small decorative flame */
+    .flame-wrap{
+      position:absolute; right:14px; top:-26px; transform:translateY(-6px);
+    }
+    .flame{
+      width:48px;height:80px; position:relative;
+      filter:drop-shadow(0 6px 14px rgba(0,0,0,0.45));
+    }
+    .flame .core{
+      position:absolute; left:50%; transform:translateX(-50%); bottom:0;
+      width:18px;height:40px;border-radius:50% 50% 40% 40%; background:linear-gradient(180deg,#ffb36b,#ff6a2e);
+      animation: flicker 1200ms infinite ease-in-out;
+      box-shadow: 0 12px 30px rgba(255,110,40,0.25);
+    }
+    .flame .glow{
+      position:absolute; left:50%; transform:translateX(-50%); bottom:-8px;
+      width:54px;height:22px;border-radius:50%; background: radial-gradient(circle, rgba(199,163,107,0.28), rgba(199,163,107,0) 60%);
+      filter:blur(6px); opacity:.9;
+      animation: glow 1300ms infinite ease-in-out;
+    }
+
+    @keyframes flicker{
+      0%{transform:translateX(-50%) scale(1) translateY(0)}
+      50%{transform:translateX(-50%) scale(1.06) translateY(-2px)}
+      100%{transform:translateX(-50%) scale(1) translateY(0)}
+    }
+    @keyframes glow{
+      0%{opacity:.85}
+      50%{opacity:.55}
+      100%{opacity:.85}
+    }
+
+    /* ================= CONTENT SECTIONS ================= */
+    .container{max-width:var(--max-width); margin:0 auto; padding:40px 20px; position:relative; z-index:20}
+
+    .section{
+      margin:30px auto; padding:26px; border-radius:12px;
+      background: linear-gradient(180deg, rgba(5,12,8,0.45), rgba(7,16,12,0.32));
+      border:1px solid rgba(183,238,201,0.04);
+      box-shadow: 0 10px 30px rgba(3,8,6,0.5);
+      display:block;
+    }
+    .section h2{color:var(--gold); margin-top:0; font-size:20px}
+    .section p{color:var(--text); opacity:.95; line-height:1.65}
+
+    /* ETHNIC FRAME for images/text */
+  .ethnic-frame{
+  padding:14px;
+  border-radius:12px;
+  background: rgba(255,255,255,0.02);  /* lembut, tidak ada garis */
+  border: 1px solid rgba(183,238,201,0.05);
+}
+
+
+    /* ================= GALLERY with LIGHTBOX ================= */
+    .gallery{
+      display:grid; gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      margin-top:12px;
+    }
+    .gallery figure{
+      margin:0; position:relative; overflow:hidden; border-radius:10px;
+      cursor:pointer;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .gallery img{display:block;width:100%;height:170px;object-fit:cover;transition:transform .45s cubic-bezier(.2,.9,.2,1)}
+    .gallery figure:hover img{transform:scale(1.07) rotate(-.4deg)}
+    .gallery figcaption{
+      position:absolute; left:10px; bottom:10px; color:var(--text); font-weight:700;
+      text-shadow: 0 4px 18px rgba(2,8,6,0.7); font-size:13px;
+    }
+
+    /* lightbox modal */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:80; background:rgba(2,6,4,0.6)}
+    .modal.open{display:flex}
+    .modal .modal-card{max-width:92%; max-height:86%; border-radius:12px; overflow:hidden; background:#06130d; padding:12px}
+    .modal img{max-width:100%; max-height:80vh; display:block}
+    .modal .close{position:absolute; right:18px; top:18px; background:rgba(0,0,0,0.45); color:var(--text); border:none; padding:8px 10px; border-radius:8px; cursor:pointer}
+
+    /* ================= VIDEO + AUDIO ================= */
+    .video-wrap{display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap}
+    .video-card{flex:1; min-width:280px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.04)}
+    .video-card iframe, .video-card video{width:100%; height:320px; display:block; border:none}
+
+    /* ================= FOOTER ================= */
+    footer{padding:26px 20px; text-align:center; color:var(--muted); margin-top:40px}
+    footer .small{font-size:13px;color:rgba(183,238,201,0.6)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .hero-card{flex-direction:column; padding:18px}
+      .hero-right{width:100%}
+      .gallery img{height:150px}
+      .modal .modal-card{padding:8px}
+    }
+  </style>
+</head>
+<body>
+
+ <!-- HALAMAN BERANDA --> 
+<div id="landing" style="
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  color:white;
+  text-align:center;
+  overflow:hidden;
+">
+  <!-- Background Video -->
+  <video autoplay muted loop playsinline style="
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:-2;
+    filter: brightness(60%); /* video sedikit gelap */
+  ">
+    <source src="kasadadrone.mp4" type="video/mp4">
+    Browser Anda tidak mendukung video.
+  </video>
+
+  <!-- Konten Beranda -->
+<h1 style="font-size:48px; margin-bottom:10px; text-shadow:0 4px 12px rgba(0,0,0,0.6);">Kasada Heritage</h1>
+<p style="font-size:18px; margin-top:0; margin-bottom:30px; line-height:1.2;">
+  Forest Tengger • Pelestarian Budaya
+</p>
+<button id="enterBtn" style="
+  padding:12px 24px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  background:linear-gradient(135deg,#f7d794,#e55039);
+  color:white;
+  font-weight:700;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+">Masuk</button>
+</div>
+
+<script>
+const landing = document.getElementById('landing');
+const enterBtn = document.getElementById('enterBtn');
+
+enterBtn.addEventListener('click', () => {
+  landing.style.display = 'none';
+});
+</script>
+
+  <!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-oY1aFtgO1nX1ErGURD5tvx9U7N21rGJ4e8cW0k0hP94=" crossorigin=""></script>
+
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="badge" style="padding:0;">
+  <img src="LOGO.png" alt="Logo Kasada" 
+       style="width:55px; height:55px; object-fit:cover; border-radius:12px;">
+</div>
+        <div>
+          <div class="site-title">Kasada Heritage</div>
+          <div class="site-sub">Forest Tengger • Pelestarian Budaya</div>
+        </div>
+      </div>
+
+      <nav>
+        <a href="#sejarah">Sejarah</a>
+        <a href="#video">Video</a>
+        <a href="#galeri">Galeri</a>
+        <a href="#ai">AI</a>
+      </nav>
+
+      <!-- Tombol Rubah Tema -->
+<button id="themeToggle" style="
+    margin-left:12px;
+    padding:6px 12px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    background: linear-gradient(135deg,#f7d794,#e55039);
+    color:white;
+    transition:0.3s;
+">🌗</button>
+
+    </div>
+  </header>
+  <!-- HERO with parallax layers -->
+  <section class="hero" aria-hidden="false">
+    <div class="parallax" id="parallax">
+      <div class="layer bg" data-speed="0.12"></div>
+      <div class="layer mid" data-speed="0.25"></div>
+      <div class="layer fg" data-speed="0.45"></div>
+    </div>
+
+    <div class="hero-card" role="banner">
+      <div class="hero-left">
+        <h1>Kasada Heritage</h1>
+        <p class="lead">Melestarikan ritual Yadnya Kasada lewat narasi visual, suara, dan interaksi</p>
+        <div class="ctas">
+          <button class="btn" onclick="document.getElementById('sejarah').scrollIntoView({behavior:'smooth'})">Pelajari Sejarah</button>
+          <button class="btn ghost" onclick="document.getElementById('galeri').scrollIntoView({behavior:'smooth'})">Lihat Galeri</button>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="ethnic-frame" style="padding:14px; border-radius:12px;">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="flex-shrink:0">
+              <img src="kasada.jpg" alt="Kasada" style="width:110px;height:110px;object-fit:cover;border-radius:10px;border:4px solid rgba(183,238,201,0.08)">
+            </div>
+            <div>
+              <div style="font-weight:700;color:var(--accent)">Yadnya Kasada</div>
+              <div style="font-size:13px;color:var(--muted)">Ritual tahunan masyarakat Tengger</div>
+              <div style="margin-top:10px"><small style="color:var(--muted)">Gunung Bromo, Jawa Timur</small></div>
+            </div>
+          </div>
+
+          <div class="flame-wrap" aria-hidden="true">
+            <div class="flame">
+              <div class="core"></div>
+              <div class="glow"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <main class="container" id="main">
+
+    <!-- SEJARAH -->
+    <article id="sejarah" class="section ethnic-frame" aria-labelledby="h-sejarah">
+      <h2 id="h-sejarah">Sejak abad ke-13 Masehi</h2>
+      <p>
+        <p>Versi legenda menyatakan Tengger berasal dari gabungan nama dua leluhur mereka, yakni Rara Anteng (Teng), putri raja Brawijaya, dan Joko Seger (Ger), putra seorang Brahmana Kediri. Keduanya menikah dan hidup di sekitar wilayah Penanjakan, tak jauh dari Gunung Bromo. Tapi mereka tak punya anak untuk waktu lama. Hingga akhirnya mereka berdoa kepada Sang Hyang Widhi Wasa.</p>
+        <p>Rara Anteng dan Joko Seger berjanji jika punya anak, salah satu anaknya akan dikorbankan. Tak lama kemudian, Rara Anteng hamil dan melahirkan. Anak mereka berjumlah 25. Setelah lahir, salah seorang anak mereka, Raden Kusuma, menghilang. Mereka kemudian mendengar suara Raden Kusuma keluar dari kawah Gunung Bromo.</p>
+        <p>“Keturunan Rara Anteng dan Joko Seger atau masyarakat Tengger dapat hidup aman sejahtera bila pada waktu-waktu tertentu mereka memberi korban ke kawah Gunung Bromo,” sebut Sudiro.</p>
+      </p>
+      <p style="color:var(--muted); margin-top:8px">
+        <strong>Catatan:</strong> "Kasada bukan sekadar ritual, tetapi janji yang harus dijaga.
+      Selama asap suci Bromo masih naik ke langit, selama manusia masih menggantungkan hidup pada bumi, maka rasa syukur dan pengorbanan harus tetap hidup dalam hati kita." -sesepuh
+      </p>
+    </article>
+
+    <!-- BOX INFORMASI TAMBAHAN -->
+<section id="infoTambahan" class="section ethnic-frame">
+  <h2>Memberi Korban</h2>
+    <p>Warga Tengger yakin bahwa rutin memberi korban ke kawah Gunung Bromo pada waktu-waktu tertentu akan membawa keamanan dan kesejahteraan bagi mereka.
+    Maksud “memberi korban” adalah mendermakan sebagian hasil panen dan ternak ke kawah Bromo. Inilah asal-usul upacara Yadnya Kasada. Versi legenda ini tak berbeda jauh dari versi sejarah. Menurut sejumlah prasasti di sekitar pegunungan Bromo dan Negarakertagama, orang Tengger juga disebut telah bermukim di kawasan Tengger sejak masa Majapahit.</p>
+    <p>Sutarto dalam Legenda Kasada dan Karo Orang Tengger Lumajang, disertasi di Universitas Indonesia tahun 1997, menyebut orang-orang Tengger hidup sebagai petani yang tangguh. Alam sekitar pegunungan yang dingin menempa mereka bekerja sepanjang hari agar tubuh tetap hangat. Hasil panen melimpah dan kebutuhan mereka tercukupi oleh alam di sekelilingnya. Karena itulah mereka menghormati alam dan berusaha menjaga hubungan harmonis dengannya.</p>
+    <p>Gunung Bromo yang berkawah merupakan gunung terendah di antara gunung-gunung lain di kawasan Tengger. Orang Tengger menganggap Gunung Bromo suci. Ia adalah bagian dari alam yang telah membantu orang Tengger menghidupi kesehariannya.
+    </p>
+  </section>
+
+        <!-- INTERACTIVE VIDEO SECTION -->
+<section id="video" class="section ethnic-frame">
+  <div class="ethnic-frame video-card">
+    <div class="video-content">
+      <!-- Teks di samping video -->
+      <div class="video-text">
+        <h3 style="color:var(--accent); font-size:16px;">Video Upacara</h3>
+        <p style="color:var(--muted); font-size:14px;">
+          <button class="btn" onclick="toggleAudio()">Mainkan Suasana</button>
+          <p>Video dokumenter pendek ini menampilkan proses persembahan dan suasana Bromo.</p>
+        <p style="font-size:12px;color:var(--muted); margin-top:4px;">
+          Perjalanan acara Tradisi Kasada dimulai pagi hari di Pura Luhur Poten, dengan persiapan persembahan dan arahan dari pendeta adat. Suasana khidmat menyelimuti peserta, mengawali doa dan ungkapan syukur kepada Tuhan dan leluhur.
+
+          Puncak acara adalah larung sesaji ke kawah Bromo, di mana hasil bumi, hewan ternak, dan bunga dilempar sebagai simbol pengorbanan dan doa. Beberapa sesaji ditangkap kembali sebagai berkah, menciptakan momen unik dan interaktif bagi pengunjung.
+
+          Acara berlanjut dengan dokumentasi, santap hidangan tradisional, dan workshop ringan, seperti membuat miniatur sesaji atau mengenal legenda Roro Anteng dan Joko Seger.
+
+          Penutupan diisi dengan doa dan foto bersama, meninggalkan pengalaman spiritual dan budaya yang kaya serta rasa syukur yang mendalam di hati peserta.
+        </p>
+      </div>
+
+      <!-- Video -->
+      <div class="video-wrapper">
+        <video controls style="width:100%; border-radius:12px;">
+          <source src="kasadamovie.mp4" type="video/mp4">
+          Browser Anda tidak mendukung tag video.
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tambahkan di body, bisa sebelum </body> -->
+<audio id="ambience" loop preload="auto">
+  <source src="kasadaaudio.m4a" type="audio/mpeg">
+  Browser Anda tidak mendukung tag audio.
+</audio>
+
+<script>
+  function toggleAudio() {
+    const audio = document.getElementById('ambience');
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  }
+</script>
+
+<style>
+.video-card {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  border-radius: 12px;
+  gap: 20px;
+}
+
+.video-content {
+    display: flex;
+    flex-direction: row; /* teks di samping video */
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.video-text {
+    flex: 1; /* mengambil ruang yang tersedia */
+    font-size: 16px; /* default font untuk laptop/desktop */
+    line-height: 1.6;
+    color: var(--text);
+}
+
+.video-wrapper {
+  flex: 1;
+}
+
+/* Responsive: jadi satu kolom di layar kecil */
+@media (max-width:900px){
+    .video-content {
+      flex-direction: column;
+    }
+    .video-text {
+      font-size: 14px;
+    }
+  }
+</style>
+
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <img id="lb-img" class="lb-img">
+  <button class="btn-close" id="close">Tutup</button>
+</div>
+
+    <!-- GALLERY -->
+<section id="galeri" class="section ethnic-frame">
+  <h2>Galeri Tradisi</h2>
+  <div class="gallery" aria-live="polite">
+    <figure>
+      <img src="tradisi 1.jpg.jpeg" alt="Tradisi 1">
+      <figcaption>Prosesi di Pura Poten</figcaption>
+    </figure>
+    <figure>
+      <img src="tradisi 2.jpg.jpeg" alt="Tradisi 2">
+      <figcaption>Sesajen dan Persembahan</figcaption>
+    </figure>
+    <figure>
+      <img src="tradisi 3.jpg.jpeg" alt="Tradisi 3">
+      <figcaption>Ritual di Kawah</figcaption>
+    </figure>
+    <figure>
+      <img src="tradisi 4.jpg.jpeg" alt="Tradisi 4">
+      <figcaption>Pakaian Adat Tengger</figcaption>
+    </figure>
+    <figure>
+      <img src="tradisi 5.jpg.jpeg" alt="Tradisi 5">
+      <figcaption>Suasana Malam Kasada</figcaption>
+    </figure>
+  </div>
+</section>
+
+
+<!-- Lightbox -->
+<div id="lightbox" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  align-items:center;
+  justify-content:center;
+  z-index:99999; /* super tinggi */
+">
+  <img id="lb-img" src="" style="
+    max-width:90%;
+    max-height:90%;
+    border-radius:12px;
+    z-index:99998;
+    position:relative;
+  ">
+  <button id="lb-close" style="
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:#b8860b;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    cursor:pointer;
+    border-radius:6px;
+    z-index:99999; /* lebih tinggi dari gambar */
+  ">Tutup</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const figures = document.querySelectorAll('.gallery figure img');
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbClose = document.getElementById('lb-close');
+
+  figures.forEach(img => {
+    img.addEventListener('click', () => {
+      lbImg.src = img.src;
+      lightbox.style.display = 'flex';
+    });
+  });
+
+  lbClose.addEventListener('click', () => {
+    lightbox.style.display = 'none';
+  });
+
+  lightbox.addEventListener('click', e => {
+    if(e.target === lightbox) lightbox.style.display = 'none';
+  });
+});
+</script>
+
+    <style>
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .thumb {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #eee;
+  }
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .35s ease;
+  }
+  .thumb:hover img {
+    transform: scale(1.06);
+  }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.75);
+    z-index: 9999;
+  }
+  .lightbox.open {
+    display: flex;
+  }
+  .lb-img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+  }
+  .btn-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+</style>
+
+
+<script>
+  const thumbs = document.querySelectorAll('.thumb');
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const closeBtn = document.getElementById('close');
+
+  thumbs.forEach((thumb) => {
+    thumb.addEventListener('click', function() {
+      const imgSrc = this.dataset.large || this.querySelector('img').src;
+      lbImg.src = imgSrc;
+      lightbox.classList.add('open');
+    });
+  });
+
+  closeBtn.addEventListener('click', function() {
+    lightbox.classList.remove('open');
+  });
+
+  // Tutup lightbox jika klik area gelap
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) {
+      lightbox.classList.remove('open');
+    }
+  });
+</script>
+
+
+    <!-- AI -->
+    <section id="ai" class="section ethnic-frame">
+      <h2>AI & Pelestarian Tradisi</h2>
+      <p>Tradisi Kasada tidak hanya indah secara budaya, tapi juga bisa dilestarikan dengan sentuhan teknologi modern. Dengan kamera 360° dan drone, setiap momen prosesi Kasada dapat direkam secara detail dan diubah menjadi pengalaman virtual AR/VR. Jadi, siapa pun dari seluruh dunia bisa “mengunjungi” Bromo dan merasakan ritual ini, tanpa mengganggu kesakralannya.</p>
+      <p>AI juga memainkan peran penting dalam menjaga sejarah dan visual budaya. Dengan algoritma pengolahan video dan foto, rekaman lama dapat diperbaiki kualitasnya, sementara momen-momen penting diberi tag sehingga mudah dicari. Bahkan AI generatif dapat membuat motif batik atau ilustrasi baru terinspirasi dari Kasada, memungkinkan budaya Tengger tampil di media digital dan souvenir tanpa menghilangkan nilai tradisional.</p>
+      <p>Selain itu, AI edukatif dan IoT mendukung interaksi dan keselamatan. Chatbot budaya dapat menjawab pertanyaan pengunjung atau generasi muda tentang sejarah, filosofi, dan tata cara upacara. Sensor lingkungan dan drone pemantau kawah Bromo memastikan ritual berlangsung aman, sekaligus membantu menjaga alam tetap lestari. Dengan kombinasi tradisi dan teknologi ini, Tradisi Kasada tidak hanya hidup di masa kini, tetapi juga terjaga untuk generasi yang akan datang.</p>
+    </section>
+
+    <!-- BOX INFORMASI TAMBAHAN -->
+    <section id="infoTambahan" class="section ethnic-frame">
+  <h2>Gunung Bromo Suci</h2>
+  <p>
+    <p>Orang Tengger menganggap Gunung Bromo suci dan telah membantu mereka untuk menghidupi kesehariannya. Karena itu, apa pun yang dilempar ke dalam kawah menjadi bermakna penghormatan pada alam sekaligus penyucian. Kawah untuk melempar sesaji pada ritual Yadnya Kasada disebut juga pelabuhan. Sebab, ke sanalah orang Tengger melabuhkan semua persembahan sebagai pesan leluhur mereka, Kyai Kusuma atau Raden Kusuma.
+  </p>
+  <p>
+    <p>Ritual adat Yadnya Kasada bertahan dan diwariskan dari generasi ke generasi. Makna ritualnya tetap terjaga pula. Beberapa pengamat asing mencatat jalannya upacara ini pada rentang abad ke-19 hingga 20 Masehi.
+  </p>
+  <p style="color:var(--muted); margin-top:8px">
+        <strong>Tiga tahap besar:</strong> 
+        </p>
+    <p style="color:var(--muted); margin-top:8px">
+        <strong> > </strong> Pertama, pengambilan air (mendhak tirta) yang diikuti oleh tradisi tidak tidur secara bergantian sampai pembukaan Kasada (makemit) dan menyucikan sarana dan alat Kasada (melasti).
+       </p>
+    <p style="color:var(--muted); margin-top:8px">
+        <strong> > </strong> Kedua, pembukaan kasada berupa pertunjukan sendratari.
+      </p>
+    <p style="color:var(--muted); margin-top:8px">
+        <strong> > </strong> Ketiga, membuang sesaji ke kawah secara beriringan dan berbaris.
+      </p>
+    </section>
+
+<!-- BOX INFORMASI TAMBAHAN -->
+<section id="infoTambahan" class="section ethnic-frame">
+  <h2>Penghormatan pada Alam</h2>
+  <p>
+    <p>Apa pun yang dilempar ke dalam kawah, bermakna penghormatan pada alam sekaligus penyucian.
+     Selain itu, ada mata acara tambahan lainnya terkait dengan pengukuhan seseorang di luar Tengger sebagai warga kehormatan Tengger. “Pada Hari Raya Kasada, laut pasir dan bibir kawah Gunung Bromo penuh dengan manusia. Bahkan pada hari raya ini telah muncul tradisi baru, yakni pengukuhan pejabat tinggi negara sebagai sesepuh dan warga kehormatan Tengger,” catat Sutarto.</p>
+  </p>
+  <p>
+    <p>Orang-orang itu dikukuhkan oleh dukun pandhita atau pemimpin upacara adat dan keagamaan di Tengger. Dukun pandhita pula yang menyusun dan memastikan rangkaian Yadnya Kasada berjalan lancar.</p>
+  </p>
+</section>
+
+<!-- BOX INFORMASI TAMBAHAN -->
+<section id="infoTambahan" class="section ethnic-frame">
+  <h2>Tak Termakan Zaman</h2>
+  <p>
+    <p>Dari Yadnya Kasada, orang bisa belajar tentang makna sebuah upacara yang tak termakan zaman.
+  Setelah upacara selesai, sesaji dibawa dari kaki Gunung Bromo ke atas kawah. Setelah itu, mereka melemparkan ke dalam kawah, sebagai simbol pengorbanan yang dilakukan oleh nenek moyang mereka.</p>
+  </p>
+  <p>
+    <p>Hingga hari ini, orang masih bisa menyaksikan rangkaian upacara Yadnya Kasada. Untuk dapat melihat upacara ini di Bromo, lebih baik kita datang sebelum tengah malam, karena ramainya persiapan para dukun. Dari melihat Yadnya Kasada, orang bisa belajar tentang makna sebuah upacara yang tak termakan zaman.</p>
+  </p>
+</section>
+
+<!-- ====== KASADA HERITAGE — MAPS SECTION ====== -->
+<div style="padding:40px 20px; text-align:center;">
+
+  <h2 style="font-size:28px; margin-bottom:15px;">Eksplorasi Kawasan Gunung Bromo</h2>
+  <p style="max-width:680px; margin:auto; margin-bottom:25px;">
+    Lihat area Bromo secara langsung melalui Maps dan Street View 360°.
+  </p>
+
+  <!-- Maps + Street View Container -->
+  <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+    
+    <!-- Google Maps -->
+    <iframe id="mapFrame" 
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.3097969382337!2d112.95300!3d-7.94220!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd6282542f7c6ef%3A0x9d6af6129245a1bc!2sGunung%20Bromo!5e0!3m2!1sid!2sid!4v1709999999999"
+      width="500" height="350" style="border:0; border-radius:12px;" allowfullscreen loading="lazy">
+    </iframe>
+
+   <!-- STREET VIEW: Jalur Menuju Pura Luhur Poten -->
+<iframe
+  src="https://www.google.com/maps/embed?pb=!4v1712925567000!6m8!1m7!1sCAoSLEFGMVFpcE1KSVh1a1FUcFhJVGgxVF9GOW1ZbWFoZWp6VnpwNkdKZk9BQUEw!2m2!1d-7.9421552!2d112.9530307!3f87.55!4f0!5f0.7820865974627469"
+  width="500"
+  height="350"
+  style="border:0; border-radius:12px;"
+  allowfullscreen=""
+  loading="lazy">
+</iframe>
+
+  </div>
+</div>
+
+<!-- SCRIPT UNTUK GANTI LOKASI -->
+<script>
+function showView(place) {
+  let map = document.getElementById("mapFrame");
+  let street = document.getElementById("streetFrame");
+
+  if (place === "bromo") {
+    map.src = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.3097969382337!2d112.95300!3d-7.94220!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd6282542f7c6ef%3A0x9d6af6129245a1bc!2sGunung%20Bromo!5e0!3m2!1sid!2sid!4v1709999999999";
+    street.src = "https://www.google.com/maps/embed?pb=!4v1710000000000!6m8!1m7!1sCAoSLEFGMVFpcE41SDFuRkV1S2V2V0ZpTFlJZ0VoZlZ2b0pNS2lyM1wvWjZvbEEw!2m2!1d-7.9422!2d112.9530!3f0!4f0!5f1.1924812503605782";
+  }
+
+  if (place === "penanjakan") {
+    map.src = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.167460734496!2d112.9094!3d-7.9573!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd63f62f4211bbb%3A0x49c8ecba4c6ebe97!2sView%20Point%20Penanjakan!5e0!3m2!1sid!2sid!4v1710000000001";
+    street.src = "https://www.google.com/maps/embed?pb=!4v1711000000100!6m8!1m7!1sCAoSLEFGMVFpcE1uUWRqLVpPSFNkQm55SjdMMW5mS1d1V2hLbG45QVN2ekpLSEpR!2m2!1d-7.944885!2d112.915784!3f48.2!4f5.2!5f1.1924812503605782";
+
+  }
+
+  if (place === "pasir") {
+    map.src = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.2794029327737!2d112.9567!3d-7.9450!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd62825b420e63f%3A0xf23c1c2835507c1a!2sPasir%20Berbisik!5e0!3m2!1sid!2sid!4v1710000000003";
+    street.src = "https://www.google.com/maps/embed?pb=!4v1710000000004!6m8!1m7!1sV9yBdB7HSqgAAAQItZpGkA!2m2!1d-7.9449!2d112.9570!3f0!4f0!5f1.1924812503605782";
+  }
+}
+</script>
+
+<!-- ===================== -->
+<!--   KRITIK & SARAN     -->
+<!-- ===================== -->
+<section id="kritikSaran" 
+  style="margin-top:50px; padding:20px; 
+         background:var(--card); 
+         border-radius:16px;
+         border:2px solid var(--accent);">
+
+  <h2 style="color:var(--accent); margin-bottom:15px;">Kritik & Saran</h2>
+
+  <form id="saranForm" style="display:flex; flex-direction:column; gap:12px;">
+
+    <textarea id="inputSaran" 
+      placeholder="Tulis kritik atau saran..." 
+      style="padding:14px; 
+             border-radius:12px; 
+             border:2px solid var(--accent);
+             background:var(--bg); 
+             color:var(--text);
+             min-height:90px;
+             outline:none;"></textarea>
+
+    <!-- TOMBOL KIRIM – hijau tetap -->
+    <button type="submit" id="btnKirim"
+      style="padding:12px 20px; 
+             background:#2ecc71;
+             color:white; 
+             border:none; 
+             border-radius:12px; 
+             cursor:pointer; 
+             font-weight:bold;
+             transition:0.2s;">
+      Kirim
+    </button>
+  </form>
+
+  <ul id="listSaran" style="list-style:none; padding:0; margin-top:20px; display:flex; flex-direction:column; gap:12px;"></ul>
+</section>
+
+<script>
+  const form = document.getElementById("saranForm");
+  const input = document.getElementById("inputSaran");
+  const list = document.getElementById("listSaran");
+  const btn = document.getElementById("btnKirim");
+
+  // Efek tombol ditekan
+  btn.addEventListener("mousedown", () => {
+    btn.style.transform = "scale(1.05)";
+    btn.style.background = "#27ae60";
+  });
+  btn.addEventListener("mouseup", () => {
+    btn.style.transform = "scale(1)";
+    btn.style.background = "#2ecc71";
+  });
+  btn.addEventListener("mouseleave", () => {
+    btn.style.transform = "scale(1)";
+    btn.style.background = "#2ecc71";
+  });
+
+  // Submit komentar
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const teks = input.value.trim();
+    if (!teks) return;
+
+    // Buat elemen list
+    const li = document.createElement("li");
+    li.style.background = "var(--bg)";
+    li.style.padding = "14px 16px";
+    li.style.borderRadius = "12px";
+    li.style.border = "1px solid var(--accent)";
+    li.style.color = "var(--text)";
+    li.style.display = "flex";
+    li.style.justifyContent = "space-between";
+    li.style.alignItems = "center";
+
+    // Isi teks
+    const spanTeks = document.createElement("span");
+    spanTeks.textContent = teks;
+
+    // Tombol Hapus (X)
+    const hapusBtn = document.createElement("button");
+    hapusBtn.textContent = "✕";
+    hapusBtn.style.background = "transparent";
+    hapusBtn.style.border = "none";
+    hapusBtn.style.color = "var(--accent)";
+    hapusBtn.style.fontSize = "18px";
+    hapusBtn.style.cursor = "pointer";
+    hapusBtn.style.fontWeight = "bold";
+    hapusBtn.style.marginLeft = "12px";
+
+    // Event hapus
+    hapusBtn.addEventListener("click", () => {
+      li.remove();
+    });
+
+    // Gabungkan elemen
+    li.appendChild(spanTeks);
+    li.appendChild(hapusBtn);
+    list.appendChild(li);
+
+    input.value = "";
+  });
+</script>
+
+
+  <!-- FOOTER -->
+  <footer>
+    <div>© 2025 Kasada Heritage — Forest Tengger</div>
+  </footer>
+
+<!-- Tombol toggle tema -->
+<button id="themeToggle" style="position:fixed; top:16px; right:16px; z-index:1000; padding:10px 14px; border:none; border-radius:12px; background:#b8860b; color:white; cursor:pointer; font-weight:bold;">Rubah Tema</button>
+
+<script>
+const toggleBtn = document.getElementById('themeToggle');
+let isDark = true; // default gelap
+
+toggleBtn.addEventListener('click', () => {
+  if(isDark){
+    // =========================
+    // TEMA TERANG
+    // =========================
+    document.body.style.background = 'linear-gradient(180deg, rgba(255,245,230,0.85), rgba(255,220,180,0.65)), url("https://upload.wikimedia.org/wikipedia/commons/3/3c/Yadnya_Kasada_festival_at_Mount_Bromo.jpg") center/cover fixed no-repeat';
+    
+    // Semua teks utama menjadi gelap
+    document.querySelectorAll('body *:not(.gallery figcaption)').forEach(el => {
+      if(el.tagName.match(/^(P|H[1-6]|SPAN|DIV|SMALL|LABEL|TEXTAREA|BUTTON|LI)$/i)){
+        el.style.color = '#333333';
+      }
+    });
+
+    // Header
+    const header = document.querySelector('header');
+    header.style.background = 'linear-gradient(90deg, rgba(255,240,200,0.85), rgba(255,220,160,0.65))';
+    header.querySelectorAll('nav a').forEach(a => a.style.color = '#b8860b'); // link gold
+
+    // Hero-card
+    const heroCard = document.querySelector('.hero-card');
+    heroCard.style.background = 'linear-gradient(180deg, rgba(255,245,220,0.85), rgba(255,230,200,0.65))';
+    heroCard.querySelectorAll('h1').forEach(el => el.style.color = '#b8860b'); // judul hero gold
+
+    // Tombol ghost
+    heroCard.querySelectorAll('.btn.ghost').forEach(btn => {
+      btn.style.color = '#333333';
+      btn.style.border = '1px solid rgba(184,134,11,0.6)';
+    });
+
+    // Hero-right frame
+    document.querySelectorAll('.hero-right .ethnic-frame').forEach(frame => {
+      frame.style.background = 'rgba(255,240,220,0.5)';
+      frame.style.border = '1px solid rgba(184,134,11,0.4)';
+    });
+
+    // Footer
+    document.querySelectorAll('footer').forEach(f => f.style.color = '#333333');
+
+    isDark = false;
+  } else {
+    // =========================
+    // KEMBALI TEMA GELAP
+    // =========================
+    document.body.style.background = 'linear-gradient(180deg, rgba(4,10,6,1) 0%, rgba(7,18,12,1) 60%), url("https://upload.wikimedia.org/wikipedia/commons/3/3c/Yadnya_Kasada_festival_at_Mount_Bromo.jpg") center/cover fixed no-repeat';
+    
+    document.querySelectorAll('body *:not(.gallery figcaption)').forEach(el => {
+      el.style.color = ''; // kembalikan ke default css
+    });
+
+    const header = document.querySelector('header');
+    header.style.background = 'linear-gradient(90deg, rgba(5,12,8,0.55), rgba(5,12,8,0.35))';
+    header.querySelectorAll('nav a').forEach(a => a.style.color = 'var(--accent)');
+
+    const heroCard = document.querySelector('.hero-card');
+    heroCard.style.background = 'linear-gradient(180deg, rgba(6,20,14,0.6), rgba(8,26,18,0.55))';
+    heroCard.querySelectorAll('h1').forEach(el => el.style.color = 'var(--accent)');
+    heroCard.querySelectorAll('.btn.ghost').forEach(btn => {
+      btn.style.color = 'var(--text)';
+      btn.style.border = '1px solid rgba(183,238,201,0.12)';
+    });
+
+    document.querySelectorAll('.hero-right .ethnic-frame').forEach(frame => {
+      frame.style.background = 'rgba(255,255,255,0.02)';
+      frame.style.border = '1px solid rgba(183,238,201,0.08)';
+    });
+
+    document.querySelectorAll('footer').forEach(f => f.style.color = 'var(--muted)');
+
+    isDark = true;
+  }
+});
+</script>
+
+<script>
+  const layers = document.querySelectorAll('.hero .layer');
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    layers.forEach(layer => {
+      const speed = parseFloat(layer.dataset.speed);
+      layer.style.transform = `translateY(${scrollY * speed}px)`;
+    });
+  });
+</script>
+
+</body>
+</html>

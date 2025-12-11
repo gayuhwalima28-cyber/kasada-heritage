@@ -1,0 +1,131 @@
+/* ===========================
+   DEFAULT VARIABLES
+   =========================== */
+:root {
+    --bg: #f8f5e9;       /* default background */
+    --text: #1b1b1b;     /* default text color */
+    --accent: #c49a3f;   /* default accent color */
+}
+
+/* ===========================
+   THEME A — KASADA GOLD HERITAGE
+   =========================== */
+.theme-gold {
+    --bg: #faf5e1;        /* soft gold cream */
+    --text: #2a1f0f;      /* dark brown */
+    --accent: #d4a437;    /* gold */
+}
+
+/* ===========================
+   THEME B — VOLCANO EMBER
+   =========================== */
+.theme-ember {
+    --bg: #2b0f0f;        /* dark charcoal red */
+    --text: #ffe8d6;      /* warm soft white */
+    --accent: #ff5a00;    /* lava orange */
+}
+
+/* ===========================
+   THEME C — FOREST TENGGER
+   =========================== */
+.theme-forest {
+    --bg: #0f2a1c;        /* deep forest green */
+    --text: #e6f5e9;      /* pale light green */
+    --accent: #c3a96d;    /* pale gold */
+}
+
+/* ===========================
+   THEME D — MIDNIGHT BROMO
+   =========================== */
+.theme-midnight {
+    --bg: #0b0f29;        /* deep midnight blue */
+    --text: #e8eafe;      /* soft bluish white */
+    --accent: #7c6ceb;    /* soft magic purple */
+}
+
+/* ===========================
+   BACKGROUND FIX
+   =========================== */
+html {
+    background: var(--bg);
+    transition: background 0.4s ease;
+}
+
+/* ===========================
+   GENERAL PAGE STYLING
+   =========================== */
+body {
+    background: transparent !important;
+    color: var(--text);
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: color 0.4s ease;
+}
+
+h1, h2, h3 {
+    color: var(--accent);
+    transition: color 0.4s ease;
+}
+
+p {
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* ===========================
+   THEME SWITCH BUTTONS
+   =========================== */
+.theme-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+}
+
+.theme-buttons button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    transition: background 0.3s ease, opacity 0.3s ease;
+}
+
+.theme-buttons button:hover {
+    opacity: 0.8;
+}
+
+/* ===========================
+   LINKS
+   =========================== */
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--text);
+}
+
+/* ===========================
+   CONTAINER
+   =========================== */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ===========================
+   SECTION STYLING
+   =========================== */
+.section {
+    margin: 30px 0;
+    padding: 20px 25px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    transition: background 0.4s ease;
+}
+
